@@ -30,11 +30,11 @@ export class NewsService {
   private readonly news: News[] = [
     {
       id: 1,
-      title: 'Our first news',
-      description: 'Yay! Our first news',
+      title: 'Naşa pervaja novostj',
+      description: 'Ura! Naşa pervaja novostj',
       author: 'Vladislav',
       countView: 12,
-      cover: 'https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_square.jpg'
+      cover: 'https://ychef.files.bbci.co.uk/live/624x351/p07ryyyj.jpg',
     },
   ];
 

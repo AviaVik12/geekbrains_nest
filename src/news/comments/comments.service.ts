@@ -1,10 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import { getRandomInt } from "../news.service";
+import { Injectable } from '@nestjs/common';
+import { getRandomInt } from '../news.service';
 
 export type Comment = {
   id?: number;
   message: string;
   author: string;
+};
+
+export type CommentEdit = {
+  id?: number;
+  message?: string;
+  author?: string;
 };
 
 @Injectable()
@@ -17,7 +23,23 @@ export class CommentsService {
     }
 
     this.comments[idNews].push({ ...comment, id: getRandomInt() });
-    return "Comment created";
+    return 'Kommentarij sozdan';
+  }
+
+  edit(idNews: number, idComment: number, comment: CommentEdit) {
+    const indexComment =
+      this.comments[idNews].find((comment) => comment.id === idComment) === -1;
+
+    if (!this.comments[idNews] || indexComment) {
+      return false;
+    }
+
+    this.comments[idNews][indexComment] = {
+      ...this.comments[idNews][indexComment],
+      comment,
+    };
+
+    return 'Kommentarij obnovlen';
   }
 
   find(idNews: number): Comment[] | null {
@@ -30,7 +52,7 @@ export class CommentsService {
     }
 
     const indexComment = this.comments[idNews].findIndex(
-      (c) => c.id === idComment
+      (c) => c.id === idComment,
     );
 
     if (indexComment === -1) {
