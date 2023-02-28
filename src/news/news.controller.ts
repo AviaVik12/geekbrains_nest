@@ -8,6 +8,8 @@ import {
   Put,
   UseInterceptors,
   UploadedFile,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { News, NewsService } from './news.service';
 import { CommentsService } from './comments/comments.service';
@@ -81,6 +83,18 @@ export class NewsController {
     @Body() news: CreateNewsDto,
     @UploadedFile() cover: Express.Multer.File,
   ): News {
+    const fileExtension = cover.originalname.split('.').reverse()[0];
+
+    if (!fileExtension || !fileExtension.match(/(jpg|jpeg|png|gif)$/)) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Nevernyj format dannyx',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     if (cover?.filename) {
       news.cover = PATH_NEWS + cover.filename;
     }

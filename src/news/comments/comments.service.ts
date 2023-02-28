@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { getRandomInt } from '../news.service';
+import { CreateCommentDto } from './dtos/create_comment_dto';
 
 export type Comment = {
   id?: number;
@@ -17,32 +18,34 @@ export type CommentEdit = {
 export class CommentsService {
   private readonly comments = {};
 
-  create(idNews: number, comment: Comment) {
+  create(idNews: number, comment: CreateCommentDto) {
     if (!this.comments[idNews]) {
       this.comments[idNews] = [];
     }
 
-    this.comments[idNews].push({ ...comment, id: getRandomInt() });
-    return 'Kommentarij sozdan';
+    const newComment = { ...comment, id: getRandomInt() };
+    this.comments[idNews].push(newComment);
+    return newComment;
   }
 
   edit(idNews: number, idComment: number, comment: CommentEdit) {
-    const indexComment =
-      this.comments[idNews].find((comment) => comment.id === idComment) === -1;
+    const indexComment = this.comments[idNews].find(
+      (comment) => comment.id === idComment,
+    );
 
-    if (!this.comments[idNews] || indexComment) {
+    if (!this.comments[idNews] || indexComment === -1) {
       return false;
     }
 
     this.comments[idNews][indexComment] = {
       ...this.comments[idNews][indexComment],
-      comment,
+      ...comment,
     };
 
-    return 'Kommentarij obnovlen';
+    return this.comments[idNews][indexComment];
   }
 
-  find(idNews: number): Comment[] | null {
+  find(idNews: number): CreateCommentDto[] | null {
     return this.comments[idNews] || null;
   }
 

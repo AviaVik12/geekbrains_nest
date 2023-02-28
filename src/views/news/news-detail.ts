@@ -1,7 +1,10 @@
 import { News } from '../../news/news.service';
-import { Comment } from 'src/news/comments/comments.service';
+import { CreateCommentDto } from 'src/news/comments/dtos/create_comment_dto';
 
-export function renderNewsDetail(news: News, comment: Comment[]): string {
+export function renderNewsDetail(
+  news: News,
+  comment: CreateCommentDto[],
+): string {
   return `
     <div class="container">
       <img src="${news.cover}" alt="">
@@ -14,14 +17,18 @@ export function renderNewsDetail(news: News, comment: Comment[]): string {
   `;
 }
 
-function renderNewsComments(comments: Comment[]): string {
+function renderNewsComments(comments: CreateCommentDto[]): string {
   let html = '';
 
   for (const comment of comments) {
     html += `
       <div class="row">
         <div class="col-lg-1">
-          <div style="background: #ccc; width: 75px; height: 75px" class="rounded-lg"></div>
+          ${
+            comment?.avatar
+              ? `<img src="${comment.avatar}" style="background: #ccc; width: 75px; height: 75px; overflow: hidden; object-fit: cover"/>`
+              : '<div style="background: #ccc; width: 75px; height: 75px; overflow: hidden;" class="rounded-lg"></div>'
+          }
         </div>
 
         <div class="col-lg-8">
