@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Priloƶenije</title>
+  </head>
+
+  <body>
+    <h1>
+      <ul>
+        {{#each messages}}
+          <li>
+            {{#if this.author}}
+              <h2>{{this.author}}</h2>
+            {{else}}
+              <h2>Imeni net</h2>
+            {{/if}}
+
+            <h4>{{this.message}}</h4>
+          </li>
+        {{/each}}
+      </ul>
+    </h1>
+  </body>
+</html>

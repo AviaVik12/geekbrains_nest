@@ -10,6 +10,7 @@ import {
   UploadedFile,
   HttpException,
   HttpStatus,
+  Render,
 } from '@nestjs/common';
 import { News, NewsService } from './news.service';
 import { CommentsService } from './comments/comments.service';
@@ -21,6 +22,7 @@ import { renderTemplate } from '../views/template';
 import { CreateNewsDto } from './dtos/create_news_dto';
 import { EditNewsDto } from './dtos/edit_news_dto';
 import { HelperFileLoader } from 'src/utils/helper_file_loader';
+import { MailService } from 'src/mail/mail.service';
 
 const PATH_NEWS = '/news_static/';
 HelperFileLoader.path = PATH_NEWS;
@@ -30,6 +32,7 @@ export class NewsController {
   constructor(
     private readonly newsService: NewsService,
     private readonly commentsService: CommentsService,
+    private readonly mailService: MailService,
   ) {}
 
   @Get('/api/details/:id')
@@ -47,13 +50,16 @@ export class NewsController {
   }
 
   @Get('/all')
+  @Render('news_list')
   getAllView() {
     const news = this.newsService.getAll();
-    const content = renderNewsAll(news);
-    return renderTemplate(content, {
-      title: 'Spisok Novostej',
-      description: 'Samyje krutyje novosti v mire!',
-    });
+    return { news, title: 'Spisok novostej' };
+  }
+
+  @Get('create/new')
+  @Render('create_news')
+  async createView() {
+    return {};
   }
 
   @Get('/details/:id')
@@ -79,10 +85,10 @@ export class NewsController {
       }),
     }),
   )
-  create(
+  async create(
     @Body() news: CreateNewsDto,
-    @UploadedFile() cover: Express.Multer.File,
-  ): News {
+    @UploadedFile() cover,
+  ): Promise<News> {
     const fileExtension = cover.originalname.split('.').reverse()[0];
 
     if (!fileExtension || !fileExtension.match(/(jpg|jpeg|png|gif)$/)) {
@@ -99,7 +105,12 @@ export class NewsController {
       news.cover = PATH_NEWS + cover.filename;
     }
 
-    return this.newsService.create(news);
+    const createdNews = this.newsService.create(news);
+    await this.mailService.sendNewNewsForAdmins(
+      ['air_vic@ukr.net', 'victor1207d@gmail.com'],
+      createdNews,
+    );
+    return createdNews;
   }
 
   @Put('/api/:id')

@@ -1,0 +1,31 @@
+{{#if news}}
+  <div class="row">
+    {{#each news}}
+      <div class="col-lg-6">
+        <div class="card">
+          <img 
+            src="http://localhost:3000{{this.cover}}" 
+            class="card-img-top" 
+            style="height: 200px; object-fit: cover;" 
+            alt=""
+          >
+
+          <div class="card-body">
+            <h5 class="card-title">{{this.title}}</h5>
+
+            <h6 class="card-subtitle mb-2 text-muted">
+              Avtor: {{this.author}}
+            </h6>
+            {{!-- <h6 class="card-subtitle mb-2 text-muted">
+              Data sozdanija: {{this.createdAt}}
+            </h6> --}}
+
+            <p class="card-text">{{this.description}}</p>
+          </div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
+{{else}}
+  <h1>Spisok novostej pust!</h1>
+{{/if}}

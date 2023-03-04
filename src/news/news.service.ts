@@ -34,7 +34,7 @@ export class NewsService {
       description: 'Ura! Naşa pervaja novostj',
       author: 'Vladislav',
       countView: 12,
-      cover: 'https://ychef.files.bbci.co.uk/live/624x351/p07ryyyj.jpg',
+      cover: '/cat.gif',
     },
   ];
 
