@@ -63,17 +63,13 @@ export class NewsController {
   }
 
   @Get('/details/:id')
+  @Render('news_details')
   getDetailView(@Param('id') id: string) {
     const inInt = parseInt(id);
     const news = this.newsService.find(inInt);
     const comments = this.commentsService.find(inInt);
 
-    const content = renderNewsDetail(news, comments);
-
-    return renderTemplate(content, {
-      title: news.title,
-      description: news.description,
-    });
+    return { news, comments };
   }
 
   @Post('/api')
