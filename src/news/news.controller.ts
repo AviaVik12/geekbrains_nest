@@ -77,10 +77,8 @@ export class NewsController {
         HttpStatus.NOT_FOUND,
       );
     }
-
-    const comments = this.commentsService.find(id);
-
-    return { news, comments };
+    
+    return news;
   }
 
   @Post('/api')
@@ -113,6 +111,7 @@ export class NewsController {
     }
 
     const createdNews = await this.newsService.create(news);
+
     return createdNews;
   }
 

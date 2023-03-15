@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateCommentDto {
   @IsNotEmpty()
@@ -6,8 +6,6 @@ export class CreateCommentDto {
   message: string;
 
   @IsNotEmpty()
-  @IsString()
-  author: string;
-
-  avatar: string;
+  @IsNumber()
+  userId: number;
 }
