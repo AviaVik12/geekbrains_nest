@@ -3,21 +3,21 @@ import { AppService } from './app.service';
 
 @Controller('/app')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+	constructor(private readonly appService: AppService) {}
 
-  @Get('/hello')
-  getHello(): string {
-    return this.appService.getHello();
-  }
+	@Get('/hello')
+	getHello(): string {
+		return this.appService.getHello();
+	}
 
-  @Get()
-  @Render('index')
-  root() {
-    return {
-      messages: [
-        { message: 'Privet', author: 'Vladislav' },
-        { message: 'Mir', author: 'Ivan' },
-      ],
-    };
-  }
+	@Get()
+	@Render('index')
+	root() {
+		return {
+			messages: [
+				{ message: 'Privet', author: 'Vladislav' },
+				{ message: 'Mir', author: 'Ivan' },
+			],
+		};
+	}
 }

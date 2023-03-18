@@ -3,10 +3,10 @@ import { MailService } from './mail.service';
 
 @Controller('mail')
 export class MailController {
-  constructor(private readonly mailService: MailService) {}
+	constructor(private readonly mailService: MailService) {}
 
-  @Get()
-  async sendTestEmail() {
-    return await this.mailService.sendTest();
-  }
+	@Get()
+	async sendTestEmail() {
+		return await this.mailService.sendTest();
+	}
 }
