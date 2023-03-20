@@ -1,32 +1,59 @@
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { checkPermission, Modules } from '../auth/role/utils/check_permission';
 import { hash } from '../utils/crypto';
 import { CreateUserDto } from './dtos/create_user_dto';
+import { EditUserDto } from './dtos/edit_user_dto';
 import { UsersEntity } from './users.entity';
 
 @Injectable()
 export class UsersService {
-	constructor(
-		@InjectRepository(UsersEntity)
-		private usersRepository: Repository<UsersEntity>,
-	) {}
+  constructor(
+    @InjectRepository(UsersEntity)
+    private usersRepository: Repository<UsersEntity>,
+  ) {}
 
-	async create(user: CreateUserDto) {
-		const userEntity = new UsersEntity();
-		userEntity.firstName = user.firstName;
-		userEntity.email = user.email;
-		userEntity.password = await hash(user.password);
-		userEntity.roles = user.roles;
+  async create(user: CreateUserDto) {
+    const userEntity = new UsersEntity();
+    userEntity.firstName = user.firstName;
+    userEntity.email = user.email;
+    userEntity.password = await hash(user.password);
+    userEntity.roles = user.roles;
 
-		return this.usersRepository.save(userEntity);
-	}
+    return this.usersRepository.save(userEntity);
+  }
 
-	async findById(id: number) {
-		return this.usersRepository.findOne({ id });
-	}
+  async edit(id: number, user: EditUserDto) {
+    const _user = await this.findById(id);
 
-	async findByEmail(email): Promise<UsersEntity> {
-		return await this.usersRepository.findOne({ email });
-	}
+    if (!_user) {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: 'Nevernyj identifikator poljzovatelä',
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    _user.firstName = user.firstName || _user.firstName;
+    _user.email = user.email || _user.email;
+
+    if (checkPermission(Modules.changeRole, _user.roles)) {
+      _user.roles = user.roles || _user.roles;
+    }
+
+    _user.password = (await hash(user.password)) || _user.password;
+
+    return this.usersRepository.save(_user);
+  }
+
+  async findById(id: number) {
+    return this.usersRepository.findOne({ id });
+  }
+
+  async findByEmail(email): Promise<UsersEntity> {
+    return await this.usersRepository.findOne({ email });
+  }
 }

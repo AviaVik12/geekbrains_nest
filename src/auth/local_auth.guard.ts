@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/commom';
+import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()

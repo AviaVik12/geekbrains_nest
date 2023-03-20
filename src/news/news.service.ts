@@ -7,77 +7,77 @@ import { CreateNewsDto } from './dtos/create_news_dto';
 import { NewsEntity } from './news.entity';
 
 export interface News {
-	id?: number;
-	title: string;
-	description: string;
-	author: string;
-	countView?: number;
-	comments?: Comment[];
-	cover?: string;
+  id?: number;
+  title: string;
+  description: string;
+  author: string;
+  countView?: number;
+  comments?: Comment[];
+  cover?: string;
 }
 
 export interface NewsEdit {
-	title?: string;
-	description?: string;
-	author?: string;
-	countView?: number;
-	cover?: string;
+  title?: string;
+  description?: string;
+  author?: string;
+  countView?: number;
+  cover?: string;
 }
 
 @Injectable()
 export class NewsService {
-	constructor(
-		@InjectRepository(NewsEntity)
-		private newsRepository: Repository<NewsEntity>,
-		private usersService: UsersService,
-	) {}
+  constructor(
+    @InjectRepository(NewsEntity)
+    private newsRepository: Repository<NewsEntity>,
+    private usersService: UsersService,
+  ) {}
 
-	async create(news: CreateNewsDto): Promise<NewsEntity> {
-		const newsEntity = new NewsEntity();
+  async create(news: CreateNewsDto): Promise<NewsEntity> {
+    const newsEntity = new NewsEntity();
 
-		newsEntity.title = news.title;
-		newsEntity.description = news.description;
-		newsEntity.cover = news.cover;
+    newsEntity.title = news.title;
+    newsEntity.description = news.description;
+    newsEntity.cover = news.cover;
 
-		const _user = await this.usersService.findById(parseInt(news.userId));
-		newsEntity.user = _user;
-		return await this.newsRepository.save(newsEntity);
-	}
+    const _user = await this.usersService.findById(parseInt(news.userId));
+    newsEntity.user = _user;
+    return await this.newsRepository.save(newsEntity);
+  }
 
-	findById(id: News['id']): Promise<NewsEntity> {
-		return this.newsRepository.findOne(
-			{ id },
-			{ relations: ['user', 'comments', 'comments.user'] },
-		);
-	}
+  findById(id: News['id']): Promise<NewsEntity> {
+    return this.newsRepository.findOne(
+      { id },
+      { relations: ['user', 'comments', 'comments.user'] },
+    );
+  }
 
-	getAll(): Promise<NewsEntity[]> {
-		return this.newsRepository.find({});
-	}
+  getAll(): Promise<NewsEntity[]> {
+    return this.newsRepository.find({});
+  }
 
-	async edit(id: number, news: NewsEdit): Promise<NewsEntity | null> {
-		const editableNews = await this.findById(id);
+  async edit(id: number, news: NewsEdit): Promise<NewsEntity | null> {
+    const editableNews = await this.findById(id);
 
-		if (editableNews) {
-			const newsEntity = new NewsEntity();
+    if (editableNews) {
+      const newsEntity = new NewsEntity();
 
-			newsEntity.title = news.title || editableNews.title;
-			newsEntity.description = news.description || editableNews.description;
-			newsEntity.cover = news.cover || editableNews.cover;
+      newsEntity.title = news.title || editableNews.title;
+      newsEntity.description = news.description || editableNews.description;
+      newsEntity.cover = news.cover || editableNews.cover;
 
-			return this.newsRepository.save(newsEntity);
-		}
+      return this.newsRepository.save(newsEntity);
+    }
 
-		return null;
-	}
+    return null;
+  }
 
-	async remove(id: News['id']): Promise<NewsEntity | null> {
-		const removeNews = await this.findById(id);
+  async remove(id: News['id']): Promise<NewsEntity | null> {
+    const removeNews = await this.findById(id);
 
-		if (removeNews) {
-			return this.newsRepository.remove(removeNews);
-		}
+    if (removeNews) {
+      return this.newsRepository.remove(removeNews);
+    }
 
-		return null;
-	}
+    return null;
+  }
 }
