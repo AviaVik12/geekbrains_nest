@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NewsModule } from './news/news.module';
 import { UsersModule } from './users/users.module';
@@ -22,6 +23,7 @@ import { AppService } from './app.service';
       synchronize: true,
     }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'public') }),
+    EventEmitterModule.forRoot(),
     NewsModule,
     MailModule,
     UsersModule,

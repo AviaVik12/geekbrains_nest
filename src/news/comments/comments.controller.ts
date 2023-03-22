@@ -1,4 +1,3 @@
-import { diskStorage } from 'multer';
 import {
   Controller,
   Post,
@@ -7,12 +6,12 @@ import {
   Get,
   Delete,
   Put,
-  UseInterceptors,
-  UploadedFile,
   ParseIntPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { HelperFileLoader } from 'src/utils/helper_file_loader';
+import { HelperFileLoader } from '../../utils/helper_file_loader';
+import { JwtAuthGuard } from '../../auth/jwt_auth.guard';
 import { CreateCommentDto } from './dtos/create_comment_dto';
 import { EditCommentDto } from './dtos/edit_comment_dto';
 import { CommentsService } from './comments.service';
@@ -25,11 +24,14 @@ export class CommentsController {
   constructor(private readonly commentService: CommentsService) {}
 
   @Post('/api/:idNews')
+  @UseGuards(JwtAuthGuard)
   create(
     @Param('idNews', ParseIntPipe) idNews: number,
     @Body() comment: CreateCommentDto,
+    @Req() request,
   ) {
-    return this.commentService.create(idNews, comment);
+    const jwtUserId = request.userId;
+    return this.commentService.create(idNews, comment.message, jwtUserId);
   }
 
   @Put('/api/:idComment')

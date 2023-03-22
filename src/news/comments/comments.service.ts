@@ -1,9 +1,9 @@
 import { Repository } from 'typeorm';
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UsersService } from '../../users/users.service';
 import { NewsService } from '../news.service';
-import { CreateCommentDto } from './dtos/create_comment_dto';
 import { CommentsEntity } from './comments.entity';
 
 export type Comment = {
@@ -25,36 +25,38 @@ export class CommentsService {
     private readonly commentsRepository: Repository<CommentsEntity>,
     private readonly newsService: NewsService,
     private readonly userService: UsersService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   private readonly comments = {};
 
   async create(
     idNews: number,
-    comment: CreateCommentDto,
+    message: string,
+    idUser: number,
   ): Promise<CommentsEntity> {
     const _news = await this.newsService.findById(idNews);
 
     if (!_news) {
       throw new HttpException(
-        { status: Http.NOT_FOUND, error: 'Novostj ne najdena' },
-        Http.NOT_FOUND,
+        { status: HttpStatus.NOT_FOUND, error: 'Novostj ne najdena' },
+        HttpStatus.NOT_FOUND,
       );
     }
 
-    const _user = await this.userService.findById(comment.userId);
+    const _user = await this.userService.findById(idUser);
 
     if (!_user) {
       throw new HttpException(
-        { status: Http.NOT_FOUND, error: 'Poljzovatelj ne najden' },
-        Http.NOT_FOUND,
+        { status: HttpStatus.NOT_FOUND, error: 'Poljzovatelj ne najden' },
+        HttpStatus.NOT_FOUND,
       );
     }
 
     const commentEntity = new CommentsEntity();
     commentEntity.news = _news;
     commentEntity.user = _user;
-    commentEntity.message = comment.message;
+    commentEntity.message = message;
 
     return this.commentsRepository.save(commentEntity);
   }
@@ -73,25 +75,27 @@ export class CommentsService {
     });
   }
 
-  async remove(idNews: number, idComment: number): Promise<CommentsEntity> {
-    const _comment = await this.commentsRepository.findOne(idComment);
+  async remove(idComment: number): Promise<CommentsEntity> {
+    const _comment = await this.commentsRepository.findOne({
+      where: { id: idComment },
+      relations: ['news'],
+    });
 
     if (!_comment) {
       throw new HttpException(
-        { status: Http.NOT_FOUND, error: 'Kommentarij ne najden' },
-        Http.NOT_FOUND,
+        { status: HttpStatus.NOT_FOUND, error: 'Kommentarij ne najden' },
+        HttpStatus.NOT_FOUND,
       );
     }
 
-    const indexComment = this.comments[idNews].findIndex(
-      (c) => c.id === idComment,
-    );
+    const comment = this.commentsRepository.remove(_comment);
 
-    if (indexComment === -1) {
-      return null;
-    }
+    this.eventEmitter.emit('comment.remove', {
+      commentId: idComment,
+      newsId: _comment.newsId,
+    });
 
-    return this.commentsRepository.remove(_comment);
+    return comment;
   }
 
   async removeAll(idNews) {

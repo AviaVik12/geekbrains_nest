@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Role } from '../auth/role/role.enum';
+import { Roles } from 'src/auth/role/roles.decorator';
 import { JwtAuthGuard } from '../auth/jwt_auth.guard';
 import { HelperFileLoader } from '../utils/helper_file_loader';
 import { MailService } from '../mail/mail.service';
@@ -81,7 +82,7 @@ export class NewsController {
       );
     }
 
-    return news;
+    return { news };
   }
 
   @UseGuards(JwtAuthGuard)
