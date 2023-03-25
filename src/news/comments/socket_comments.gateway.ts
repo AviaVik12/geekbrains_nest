@@ -11,6 +11,7 @@ import {
 import { OnEvent } from '@nestjs/event-emitter';
 import { WsJwtGuard } from '../../auth/ws_jwt.guard';
 import { CommentsService } from './comments.service';
+import { EventsComment } from './events_comment.enum';
 
 export type Comment = { message: string; idNews: number };
 
@@ -33,10 +34,20 @@ export class SocketCommentsGateway
     this.server.to(idNews.toString()).emit('newComment', _comment);
   }
 
-  @OnEvent('comment.remove')
+  @OnEvent(EventsComment.remove)
   handleRemoveCommentEvent(payload) {
     const { commentId, newsId } = payload;
     this.server.to(newsId.toString()).emit('removeComment', { id: commentId });
+  }
+
+  @OnEvent(EventsComment.edit)
+  handleEditCommentEvent(payload) {
+    const { commentId, newsId, comment } = payload;
+    console.log(commentId, newsId, comment);
+
+    this.server
+      .to(newsId.toString())
+      .emit('editComment', { id: commentId, comment });
   }
 
   afterInit(server: Server) {

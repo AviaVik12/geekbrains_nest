@@ -47,8 +47,10 @@ export class CommentsController {
     return this.commentService.findAll(idNews);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('/api/details/:idNews/:idComment')
-  remove(@Param('idComment', ParseIntPipe) idComment: number) {
-    return this.commentService.remove(idComment);
+  remove(@Param('idComment', ParseIntPipe) idComment: number, @Req() request) {
+    const userId = request.user.id;
+    return this.commentService.remove(idComment, userId);
   }
 }

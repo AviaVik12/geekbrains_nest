@@ -16,8 +16,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { Role } from '../auth/role/role.enum';
-import { Roles } from 'src/auth/role/roles.decorator';
+import { Roles } from '../auth/role/roles.decorator';
 import { JwtAuthGuard } from '../auth/jwt_auth.guard';
 import { HelperFileLoader } from '../utils/helper_file_loader';
 import { MailService } from '../mail/mail.service';
@@ -30,6 +31,7 @@ import { NewsEntity } from './news.entity';
 const PATH_NEWS = '/news_static/';
 HelperFileLoader.path = PATH_NEWS;
 
+@ApiBearerAuth()
 @Controller('news')
 export class NewsController {
   constructor(
@@ -85,6 +87,13 @@ export class NewsController {
     return { news };
   }
 
+  @ApiOperation({ summary: 'Sozdanije novosti' })
+  @ApiResponse({
+    status: 200,
+    description: 'Novostj uspeşno sozdalasj',
+    type: NewsEntity,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   @UseGuards(JwtAuthGuard)
   @Roles(Role.Admin, Role.Moderator)
   @Post('/api')

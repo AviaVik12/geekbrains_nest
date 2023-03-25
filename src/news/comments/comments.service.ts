@@ -2,9 +2,14 @@ import { Repository } from 'typeorm';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  checkPermission,
+  Modules,
+} from '../../auth/role/utils/check_permission';
 import { UsersService } from '../../users/users.service';
 import { NewsService } from '../news.service';
 import { CommentsEntity } from './comments.entity';
+import { EventsComment } from './events_comment.enum';
 
 export type Comment = {
   id?: number;
@@ -62,10 +67,20 @@ export class CommentsService {
   }
 
   async edit(idComment: number, comment: CommentEdit): Promise<CommentsEntity> {
-    const _comment = await this.commentsRepository.findOne(idComment);
+    const _comment = await this.commentsRepository.findOne({
+      where: { id: idComment },
+      relations: ['news', 'user'],
+    });
     _comment.message = comment.message;
+    const _updatedComment = await this.commentsRepository.save(_comment);
 
-    return this.commentsRepository.save(_comment);
+    this.eventEmitter.emit(EventsComment.edit, {
+      commentId: idComment,
+      newsId: _comment.news.id,
+      comment: _updatedComment,
+    });
+
+    return _updatedComment;
   }
 
   async findAll(idNews: number): Promise<CommentsEntity> {
@@ -75,7 +90,7 @@ export class CommentsService {
     });
   }
 
-  async remove(idComment: number): Promise<CommentsEntity> {
+  async remove(idComment: number, userId: number): Promise<CommentsEntity> {
     const _comment = await this.commentsRepository.findOne({
       where: { id: idComment },
       relations: ['news'],
@@ -88,11 +103,26 @@ export class CommentsService {
       );
     }
 
+    const _user = await this.userService.findById(userId);
+
+    if (
+      _user.id !== _comment.user.id &&
+      !checkPermission(Modules.editComment, _user.roles)
+    ) {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: 'Nedostatocno prav dlä udalenija',
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     const comment = this.commentsRepository.remove(_comment);
 
-    this.eventEmitter.emit('comment.remove', {
+    this.eventEmitter.emit(EventsComment.remove, {
       commentId: idComment,
-      newsId: _comment.newsId,
+      newsId: _comment.news.id,
     });
 
     return comment;

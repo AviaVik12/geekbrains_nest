@@ -2,6 +2,15 @@
 
 const e = React.createElement;
 
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+
+  if (parts.length === 2) {
+    return parts.pop().split(';').shift();
+  }
+}
+
 class Comments extends React.Component {
   constructor(props) {
     super(props);
@@ -19,14 +28,30 @@ class Comments extends React.Component {
 
   componentDidMount() {
     this.getAllComments();
+
     this.socket.on('newComment', (message) => {
       const comments = this.state.comments;
       comments.push(message);
+
       this.setState(comments);
     });
+
     this.socket.on('removeComment', (payload) => {
       const { id } = payload;
       const comments = this.state.comments.filter((c) => c.id !== id);
+
+      this.setState({ comments });
+    });
+
+    this.socket.on('editComment', (payload) => {
+      const { id, comment } = payload;
+      const comments = [...this.state.comments];
+      const indexEdit = comments.findIndex((c) => c.id === id);
+
+      if (indexEdit !== -1) {
+        comments[indexEdit] = comment;
+      }
+
       this.setState({ comments });
     });
   }
@@ -54,7 +79,16 @@ class Comments extends React.Component {
     });
   };
 
+  removeComment = (idComment) => {
+    fetch(
+      `http://localhost:3000/comments/api/details/${this.idNews}/${idComment}`,
+      { method: 'DELETE' },
+    );
+  };
+
   render() {
+    const userId = parseInt(getCookie('userId'));
+
     return (
       <div>
         {this.state.messages.map((comment, index) => {
@@ -63,23 +97,20 @@ class Comments extends React.Component {
               <div className="card-body">
                 <strong>{comment.user.firstName}</strong>
                 <div>{comment.message}</div>
+                <div>
+                  {comment.user.id == userId && (
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      onclick={() => this.removeComment(comment.id)}
+                    >
+                      Udalitj
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
-
-        <div>
-          <div className="form-floating mb-3">
-            <input
-              className="form-control"
-              value={this.state.name}
-              onChange={this.onChange}
-              name="name"
-              placeholder="Imä"
-            />
-            <label htmlFor="floatingInput">Imä</label>
-          </div>
-        </div>
 
         <hr />
 
